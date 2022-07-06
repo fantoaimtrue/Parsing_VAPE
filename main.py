@@ -2,38 +2,27 @@ import requests
 from bs4 import BeautifulSoup
 from time import sleep
 
+list_card_url = []
 headers = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36"}
-
-def download(url):
-    resp = requests.get(url, stream=True)
-    r = open('C:\\Users\\1F1T1\Desktop\\image\\' + url.split('/')[-1], 'wb')
-    for value in resp.iter_content(1024*1024):
-        r.write(value)
-    r.close()
-
-def get_url():
-    url = 'https://altapress.ru/'
+for n in range(1, 2):
+    sleep(3)
+    url = f"https://barnaul.parosigara.ru/catalog/veypy/?PAGEN_1={n}"
     response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, 'lxml')
-    for i in range(2, 6):
-        data = soup.find_all('div', class_=f'post_item cell_type_1 post_item_{i} col-xl-3 col-3')
-        for ii in data:
-            card_url = "https://altapress.ru" + ii.find('a').get('href')
-            print(card_url)
-print(get_url())
-# def array():
-#     for card_url in get_url():
-#
-#         response = requests.get(card_url, headers=headers)
-#         sleep(1)
-#         soup = BeautifulSoup(response.text, 'lxml')
-#
-#
-#         data = soup.find('div', class_='b-post story')
-#         title = data.find('h1').text
-#         text = data.find('div', class_='bb_phrase').text
-#         #url_image = 'https://scrapingclub.com' + data.find('img', class_='card-img-top img-fluid').get('src')
-#         #download(url_image)
-#         return title, tedxt
+    soup = BeautifulSoup(response.text, "lxml")
+    data = soup.find_all('div', class_='item_block col-4 col-md-3 col-sm-6 col-xs-6')
 
-#print(array())
+    for i in data:
+        card_url = "https://barnaul.parosigara.ru" + i.find('a').get('href')
+        list_card_url.append(card_url) #Получаем список карточек товаров
+
+for card_url in list_card_url: #Парсинг каждой карточки товара
+    response = requests.get(card_url, headers=headers)
+    soup = BeautifulSoup(response.text, "lxml")
+    data = soup.find('div', class_="wraps hover_blink")
+
+    title = data.find("h1").text
+    price = data.find('div', class_='price').text
+    store_view = data.find('span', class_='store_view').text
+    discription = data.find('div', class_='col-md-12').text
+    img = 'https://barnaul.parosigara.ru' + data.find('div', class_='slides').find('li').find('link').get('href')
+    print(title + '\n' + price + '\n' + store_view + '\n' + discription + '\n' + img + '\n\n')
